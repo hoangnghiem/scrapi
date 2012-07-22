@@ -196,13 +196,17 @@ module Scraper
             encoding = meta[1]
           end
         end
+        # override encoding if parse_options encoding specified
+        if options.has_key?(:encoding)
+          encoding = options.delete(:encoding)
+        end
         encoding ||= "utf8"
         case (parser || :tidy)
         when :tidy
           # Make sure the Tidy path is set and always apply the default
           # options (these only control things like errors, output type).
           find_tidy
-          options = (options || {}).update(TIDY_OPTIONS)
+          options = (TIDY_OPTIONS || {}).merge(options)
           options[:input_encoding] = encoding.gsub("-", "").downcase
           html = TidyFFI::Tidy.with_options(options).clean(content)
           document = HTML::Document.new(html).find(:tag=>"html")
